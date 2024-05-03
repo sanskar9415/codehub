@@ -1,93 +1,158 @@
 import React from 'react'
+import { useState } from "react";
+import './index.css';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
+import { auth, provider } from "../../firebase";
 
 function Index() {
+  const [register, setRegister] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  
+  const handleGoogleSignIN = () => {
+    setLoading(true);
+    signInWithPopup(auth, provider).then((res) => {
+      console.log(res);
+    })
+  };
+
+  const handleSignIn = (e) => {
+    e.preventDefault();
+    setError();
+    setLoading(true);
+    if (email === "" || password === "") {
+      setError("Required field is missing");
+      setLoading(false);
+    } 
+    else {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((res) => {
+          // console.log(res);
+          console.log(res);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.log(error.code);
+          setError(error.message);
+          setLoading(false);
+        });
+    }
+  };
+
+  const handleRegister = (e) => {
+    setError("");
+    e.preventDefault();
+    setLoading(true);
+    if (email === "" || password === "" || username === "") {
+      setError("Required field is missing.");
+      setLoading(false);
+    } else {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((res) => {
+          setLoading(false);
+          console.log(res);
+        })
+        .catch((error) => {
+          console.log(error);
+          setError(error.message);
+          setLoading(false);
+        });
+    }
+  };
+
   return (
-    <div>
-        <div className="auth">
+    <div className="auth">
       <div className="auth-container">
         <p>Add another way to log in using any of the following services. </p>
         <div className="sign-options">
-          <div  className="single-option">
+          <div onClick={handleGoogleSignIN} className="single-option">
             <img
               alt="google"
-              src="https://image.flaticon.com/icons/png/512/281/281764.png"
+              src="https://cdn-icons-png.flaticon.com/512/300/300221.png"
             />
-            <p>{loading ? "Signing in..." : "Login with Google"}</p>
-          </div>
-          <div className="single-option">
-            <img
-              alt="github"
-              src="https://image.flaticon.com/icons/png/512/270/270798.png"
-            />
-            <p>Login with Github</p>
-          </div>
-          <div className="single-option">
-            <img
-              alt="facebook"
-              src="https://image.flaticon.com/icons/png/512/733/733547.png"
-            />
-            <p>Login with Facebook</p>
+            <p>Login with Google</p>
           </div>
         </div>
         <div className="auth-login">
           <div className="auth-login-container">
             {register ? (
               <>
-                {" "}
                 <div className="input-field">
                   <p>Username</p>
-                  <input
+                  <input value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     type="text"
                   />
                 </div>
                 <div className="input-field">
                   <p>Email</p>
-                  <input
-                    type="text"
+                  <input value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email"
                   />
                 </div>
                 <div className="input-field">
                   <p>Password</p>
-                  <input
+                  <input value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     
                     type="password"
                   />
                 </div>
+                <button 
+                disabled={loading}
+                 onClick={handleRegister}
+                 style={{
+                    marginTop: "10px",
+                  }}
+                >
+                {loading ? "Registering..." : "Register"}
+                  </button>
               </>
             ) : (
               <>
                 <div className="input-field">
                   <p>Email</p>
-                  <input type="text" />
+                  <input value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email" />
                 </div>
                 <div className="input-field">
                   <p>Password</p>
-                  <input type="password" />
+                  <input value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  type="password" />
                 </div>
                 <button
-                  onClick={handleSignIn}
-                  disabled={loading}
-                  style={{
+                disabled={loading}
+                onClick={handleSignIn}
+                 style={{
                     marginTop: "10px",
-                  }}
+                  }} 
                 >
-                  {loading ? "Logging in..." : "Login"}
+                 {loading ? "Logging in..." : "Login"}
                 </button>
               </>
             )}
 
-            <p
-              onClick={() => setRegister(!register)}
+            <p  
+            onClick={() => setRegister(!register)}
               style={{
                 marginTop: "10px",
                 textAlign: "center",
                 color: "#0095ff",
                 textDecoration: "underline",
                 cursor: "pointer",
-              }}
-            >
-              {register ? "Login" : "Register"} ?
-            </p>
+              }} 
+            >{register ? "Login" : "Register"} ?</p>
           </div>
         </div>
         {error !== "" && (
@@ -102,8 +167,7 @@ function Index() {
         )}
       </div>
     </div>
-    </div>
-  )
+  );
 }
 
 export default Index
